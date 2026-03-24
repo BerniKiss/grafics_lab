@@ -103,9 +103,11 @@ namespace Szeminarium1
             //Console.WriteLine($"Render after {deltaTime} [s]");
 
             Gl.Clear(ClearBufferMask.ColorBufferBit);
+            CheckGlError("Clear");
 
             uint vao = Gl.GenVertexArray();
             Gl.BindVertexArray(vao);
+            CheckGlError("BindVertexArray");
 
             float[] vertexArray = new float[] {
                 -0.5f, -0.5f, 0.0f,
@@ -121,40 +123,73 @@ namespace Szeminarium1
                 1.0f, 0.0f, 0.0f, 1.0f,
             };
 
-            uint[] indexArray = new uint[] { 
+            uint[] indexArray = new uint[] {
                 0, 1, 2,
                 2, 1, 3
             };
 
             uint vertices = Gl.GenBuffer();
             Gl.BindBuffer(GLEnum.ArrayBuffer, vertices);
+            CheckGlError("BindBuffer vertices");
+
             Gl.BufferData(GLEnum.ArrayBuffer, (ReadOnlySpan<float>)vertexArray.AsSpan(), GLEnum.StaticDraw);
+            CheckGlError("BufferData vertices");
+
             Gl.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, null);
+            CheckGlError("VertexAttribPointer 0");
+
             Gl.EnableVertexAttribArray(0);
+            CheckGlError("EnableVertexAttribArray 0");
 
             uint colors = Gl.GenBuffer();
             Gl.BindBuffer(GLEnum.ArrayBuffer, colors);
+            CheckGlError("BindBuffer colors");
+
             Gl.BufferData(GLEnum.ArrayBuffer, (ReadOnlySpan<float>)colorArray.AsSpan(), GLEnum.StaticDraw);
+            CheckGlError("BufferData colors");
+
             Gl.VertexAttribPointer(1, 4, VertexAttribPointerType.Float, false, 0, null);
+            CheckGlError("VertexAttribPointer 1");
+
             Gl.EnableVertexAttribArray(1);
+            CheckGlError("EnableVertexAttribArray 1");
 
             uint indices = Gl.GenBuffer();
             Gl.BindBuffer(GLEnum.ElementArrayBuffer, indices);
+            CheckGlError("BindBuffer indices");
+
             Gl.BufferData(GLEnum.ElementArrayBuffer, (ReadOnlySpan<uint>)indexArray.AsSpan(), GLEnum.StaticDraw);
+            CheckGlError("BufferData indices");
 
             Gl.BindBuffer(GLEnum.ArrayBuffer, 0);
+            CheckGlError("BindBuffer 0");
 
             Gl.UseProgram(program);
-            
-            Gl.DrawElements(GLEnum.Triangles, (uint)indexArray.Length, GLEnum.UnsignedInt, null); // we used element buffer
+            CheckGlError("UseProgram");
+
+            Gl.DrawElements(GLEnum.Triangles, (uint)indexArray.Length, GLEnum.UnsignedInt, null);
+            CheckGlError("DrawElements");
+
             Gl.BindBuffer(GLEnum.ElementArrayBuffer, 0);
+            CheckGlError("BindBuffer ElementArrayBuffer 0");
+
             Gl.BindVertexArray(vao);
+            CheckGlError("BindVertexArray end");
 
             // always unbound the vertex buffer first, so no halfway results are displayed by accident
             Gl.DeleteBuffer(vertices);
             Gl.DeleteBuffer(colors);
             Gl.DeleteBuffer(indices);
             Gl.DeleteVertexArray(vao);
+        }
+
+        private static void CheckGlError(string operation)
+        {
+            var err = Gl.GetError();
+            if (err != GLEnum.NoError)
+            {
+                Console.WriteLine($"GL Error in {operation}: {err}");
+            }
         }
     }
 }
